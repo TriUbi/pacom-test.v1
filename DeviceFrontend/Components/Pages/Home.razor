@@ -1,5 +1,4 @@
 ﻿@page "/"
-
 @inject HttpClient Http
 
 <h3>Status: <span style="color:@(isOn ? "green" : "red")">@(isOn ? "PÅ 🟢" : "AV 🔴")</span></h3>
@@ -10,6 +9,7 @@
 
 @code {
     private bool isOn = false;
+    private int currentId;
 
     public class DeviceStatus
     {
@@ -19,17 +19,64 @@
 
     protected override async Task OnInitializedAsync()
     {
-       var result = await Http.GetFromJsonAsync<DeviceStatus>("http://localhost:5277/api/status/first");
-        if (result != null)
+        try
         {
-            isOn = result.IsOn;
+            var result = await Http.GetFromJsonAsync<DeviceStatus>("http://localhost:5277/api/status/first");
+            if (result != null)
+            {
+                isOn = result.IsOn;
+                currentId = result.Id;
+
+                Console.WriteLine($"ℹ️ Initialt värde: Id={currentId}, IsOn={isOn}");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"❌ Fel vid hämtning: {ex.Message}");
         }
     }
 
     private async Task ToggleStatus()
     {
         isOn = !isOn;
-        var nuevoEstado = new DeviceStatus { IsOn = isOn };
-        await Http.PostAsJsonAsync("http://localhost:5277/api/status", nuevoEstado);
+        var updated = new DeviceStatus { Id = currentId, IsOn = isOn };
+
+        Console.WriteLine($"▶️ Klick: Skickar IsOn={isOn}, Id={currentId}");
+
+        try
+        {
+            if (currentId == 0)
+            {
+                // Skapa ny status
+                var response = await Http.PostAsJsonAsync("http://localhost:5277/api/status", updated);
+                if (response.IsSuccessStatusCode)
+                {
+                    var created = await response.Content.ReadFromJsonAsync<DeviceStatus>();
+                    currentId = created?.Id ?? 0;
+                    Console.WriteLine($"✅ Skapad ny status med Id={currentId}");
+                }
+                else
+                {
+                    Console.WriteLine("❌ Misslyckades att skapa ny status.");
+                }
+            }
+            else
+            {
+                // Uppdatera befintlig
+                var response = await Http.PutAsJsonAsync($"http://localhost:5277/api/status/{currentId}", updated);
+                if (response.IsSuccessStatusCode)
+                {
+                    Console.WriteLine("✅ Status uppdaterad.");
+                }
+                else
+                {
+                    Console.WriteLine("❌ Misslyckades att uppdatera status.");
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"❌ Fel vid POST/PUT: {ex.Message}");
+        }
     }
 }

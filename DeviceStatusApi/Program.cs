@@ -7,7 +7,7 @@ var builder = WebApplication.CreateBuilder(args);
 // Registrera databasen
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseMySql(
-        "Server=localhost;Port=8889;Database=device_db;User=root;Password=root;",
+        "Server=localhost;Port=8888;Database=device_db;User=root;Password=root;",
         new MySqlServerVersion(new Version(8, 0, 40))
     )
 );
@@ -65,5 +65,16 @@ app.MapDelete("/api/status/{id}", async (AppDbContext db, int id) =>
     await db.SaveChangesAsync();
     return Results.NoContent();
 });
+
+
+// TEST
+app.MapPost("/api/test", async (AppDbContext db) =>
+{
+    var nuevo = new DeviceStatus { IsOn = true };
+    db.Status.Add(nuevo);
+    await db.SaveChangesAsync();
+    return Results.Ok(nuevo);
+});
+
 
 app.Run();

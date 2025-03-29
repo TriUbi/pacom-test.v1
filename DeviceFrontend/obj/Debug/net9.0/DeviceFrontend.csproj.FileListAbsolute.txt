@@ -12,6 +12,7 @@
 /Users/trini/Desktop/pacom/DeviceFrontend/obj/Debug/net9.0/DeviceFrontend.AssemblyInfo.cs
 /Users/trini/Desktop/pacom/DeviceFrontend/obj/Debug/net9.0/DeviceFrontend.csproj.CoreCompileInputs.cache
 /Users/trini/Desktop/pacom/DeviceFrontend/obj/Debug/net9.0/DeviceFrontend.MvcApplicationPartsAssemblyInfo.cache
+/Users/trini/Desktop/pacom/DeviceFrontend/obj/Debug/net9.0/DeviceFrontend.sourcelink.json
 /Users/trini/Desktop/pacom/DeviceFrontend/obj/Debug/net9.0/scopedcss/Components/Layout/MainLayout.razor.rz.scp.css
 /Users/trini/Desktop/pacom/DeviceFrontend/obj/Debug/net9.0/scopedcss/Components/Layout/NavMenu.razor.rz.scp.css
 /Users/trini/Desktop/pacom/DeviceFrontend/obj/Debug/net9.0/scopedcss/bundle/DeviceFrontend.styles.css
@@ -77,4 +78,3 @@
 /Users/trini/Desktop/pacom/DeviceFrontend/obj/Debug/net9.0/DeviceFrontend.pdb
 /Users/trini/Desktop/pacom/DeviceFrontend/obj/Debug/net9.0/DeviceFrontend.genruntimeconfig.cache
 /Users/trini/Desktop/pacom/DeviceFrontend/obj/Debug/net9.0/ref/DeviceFrontend.dll
-/Users/trini/Desktop/pacom/DeviceFrontend/obj/Debug/net9.0/DeviceFrontend.sourcelink.json

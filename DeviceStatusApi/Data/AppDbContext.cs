@@ -5,7 +5,8 @@ namespace DeviceStatusApi.Data
 {
     public class AppDbContext : DbContext
     {
-        public DbSet<DeviceStatus> Status => Set<DeviceStatus>();
+       public DbSet<DeviceStatus> Status { get; set; }
+
 
         public AppDbContext(DbContextOptions<AppDbContext> options)
             : base(options)
