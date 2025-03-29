@@ -7,7 +7,7 @@ var builder = WebApplication.CreateBuilder(args);
 // Registrera databasen
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseMySql(
-        "Server=localhost;Port=8888;Database=device_db;User=root;Password=root;",
+        "Server=localhost;Port=8889;Database=device_db;User=root;Password=root;",
         new MySqlServerVersion(new Version(8, 0, 40))
     )
 );
@@ -38,7 +38,7 @@ app.MapGet("/api/status/{id}", async (AppDbContext db, int id) =>
 
 // Skapa ny status
 app.MapPost("/api/status", async (AppDbContext db, DeviceStatus input) =>
-{
+{    Console.WriteLine($"POST recibido: IsOn={input.IsOn}");
     db.Status.Add(input);
     await db.SaveChangesAsync();
     return Results.Created($"/api/status/{input.Id}", input);
