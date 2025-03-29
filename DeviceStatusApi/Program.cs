@@ -12,7 +12,6 @@ builder.Services.AddDbContext<AppDbContext>(options =>
     )
 );
 
-
 var app = builder.Build();
 
 // Hämta alla statusar
@@ -30,7 +29,6 @@ app.MapGet("/api/status/first", async (AppDbContext db) =>
         ? Results.Ok(new DeviceStatus { IsOn = false })
         : Results.Ok(current);
 });
-
 
 // Hämta en status via ID
 app.MapGet("/api/status/{id}", async (AppDbContext db, int id) =>

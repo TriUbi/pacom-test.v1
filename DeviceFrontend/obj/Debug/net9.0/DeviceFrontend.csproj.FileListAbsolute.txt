@@ -77,3 +77,4 @@
 /Users/trini/Desktop/pacom/DeviceFrontend/obj/Debug/net9.0/DeviceFrontend.pdb
 /Users/trini/Desktop/pacom/DeviceFrontend/obj/Debug/net9.0/DeviceFrontend.genruntimeconfig.cache
 /Users/trini/Desktop/pacom/DeviceFrontend/obj/Debug/net9.0/ref/DeviceFrontend.dll
+/Users/trini/Desktop/pacom/DeviceFrontend/obj/Debug/net9.0/DeviceFrontend.sourcelink.json
