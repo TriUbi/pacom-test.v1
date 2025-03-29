@@ -1,0 +1,12 @@
+{
+  "Version": 1,
+  "Hash": "TaP7fkQXpjbcZzBLZcBSk6OhDq/N6Di4WlwTEvQ2jP4=",
+  "Source": "DeviceStatusApi",
+  "BasePath": "_content/DeviceStatusApi",
+  "Mode": "Default",
+  "ManifestType": "Build",
+  "ReferencedProjectsConfiguration": [],
+  "DiscoveryPatterns": [],
+  "Assets": [],
+  "Endpoints": []
+}
