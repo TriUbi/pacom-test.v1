@@ -1,0 +1,35 @@
+﻿@page "/"
+
+@inject HttpClient Http
+
+<h3>Status: <span style="color:@(isOn ? "green" : "red")">@(isOn ? "PÅ 🟢" : "AV 🔴")</span></h3>
+
+<button @onclick="ToggleStatus">
+    @(isOn ? "Stäng av" : "Slå på")
+</button>
+
+@code {
+    private bool isOn = false;
+
+    public class DeviceStatus
+    {
+        public int Id { get; set; }
+        public bool IsOn { get; set; }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+       var result = await Http.GetFromJsonAsync<DeviceStatus>("http://localhost:5277/api/status/first");
+        if (result != null)
+        {
+            isOn = result.IsOn;
+        }
+    }
+
+    private async Task ToggleStatus()
+    {
+        isOn = !isOn;
+        var nuevoEstado = new DeviceStatus { IsOn = isOn };
+        await Http.PostAsJsonAsync("http://localhost:5277/api/status", nuevoEstado);
+    }
+}
