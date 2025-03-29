@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Cors;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Registrera databasen
+// Register database
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseMySql(
         "Server=localhost;Port=8889;Database=device_db;User=root;Password=root;",
@@ -18,22 +18,27 @@ builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(builder =>
     {
-        builder.WithOrigins("http://localhost:5028") // Frontend URL
+        builder.SetIsOriginAllowed(origin => origin == "http://localhost:5028")
+               .AllowAnyMethod()
                .AllowAnyHeader()
-               .AllowAnyMethod();
+               .AllowCredentials();
     });
 });
 
 var app = builder.Build();
 
-// Enable CORS
-app.UseCors();
+// Enable CORS - IMPORTANT: must be before endpoints
+app.UseCors(x => x
+    .SetIsOriginAllowed(origin => origin == "http://localhost:5028")
+    .AllowAnyMethod()
+    .AllowAnyHeader()
+    .AllowCredentials());
 
-// Hämta alla statusar
+// Get all statuses
 app.MapGet("/api/status", async (AppDbContext db) =>
     await db.Status.ToListAsync());
 
-// Hämta första (för frontend-indikator)
+// Get first status (for frontend indicator)
 app.MapGet("/api/status/first", async (AppDbContext db) =>
 {
     var current = await db.Status
@@ -45,13 +50,13 @@ app.MapGet("/api/status/first", async (AppDbContext db) =>
         : Results.Ok(current);
 });
 
-// Hämta en status via ID
+// Get status by ID
 app.MapGet("/api/status/{id}", async (AppDbContext db, int id) =>
     await db.Status.FindAsync(id) is DeviceStatus status
         ? Results.Ok(status)
         : Results.NotFound());
 
-// Skapa ny status
+// Create new status
 app.MapPost("/api/status", async (AppDbContext db, DeviceStatus input) =>
 {
     db.Status.Add(input);
@@ -59,7 +64,7 @@ app.MapPost("/api/status", async (AppDbContext db, DeviceStatus input) =>
     return Results.Created($"/api/status/{input.Id}", input);
 });
 
-// Uppdatera status via ID
+// Update status by ID
 app.MapPut("/api/status/{id}", async (AppDbContext db, int id, DeviceStatus updated) =>
 {
     var status = await db.Status.FindAsync(id);
@@ -70,7 +75,7 @@ app.MapPut("/api/status/{id}", async (AppDbContext db, int id, DeviceStatus upda
     return Results.Ok(status);
 });
 
-// Radera status via ID
+// Delete status by ID
 app.MapDelete("/api/status/{id}", async (AppDbContext db, int id) =>
 {
     var status = await db.Status.FindAsync(id);

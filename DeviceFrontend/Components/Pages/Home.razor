@@ -1,4 +1,8 @@
-﻿@page "/status"
+﻿@page "/"
+@page "/status"
+@rendermode InteractiveServer
+@using DeviceFrontend.Components.Layout
+@layout MainLayout
 @inject HttpClient Http
 
 <h3>Status:
@@ -7,7 +11,7 @@
     </span>
 </h3>
 
-<button class="btn btn-primary" @onclick="ToggleStatus">
+<button class="btn btn-primary" @onclick="HandleClick">
     @(isOn ? "Turn OFF" : "Turn ON")
 </button>
 
@@ -18,6 +22,7 @@
     private bool isOn = false;
     private int currentId;
     private string debugText = "";
+    private bool isInitialized = false;
 
     public class DeviceStatus
     {
@@ -27,72 +32,106 @@
 
     protected override async Task OnInitializedAsync()
     {
+        if (isInitialized) return;
+
         try
         {
-            var result = await Http.GetFromJsonAsync<DeviceStatus>("api/status/first");
+            debugText = "🔄 Starting OnInitializedAsync...";
+            StateHasChanged();
+
+            // Get initial status from backend
+            var result = await Http.GetFromJsonAsync<DeviceStatus>("http://localhost:5277/api/status/first");
+            debugText = $"📦 Result from api/status/first: {(result == null ? "null" : $"Id={result.Id}, IsOn={result.IsOn}")}";
+            
             if (result != null)
             {
                 isOn = result.IsOn;
                 currentId = result.Id;
-                debugText = $"📦 Initial: Id={currentId}, IsOn={isOn}";
+                debugText = $"✅ Initial state loaded: Id={currentId}, IsOn={isOn}";
+            }
+            else
+            {
+                debugText = "⚠️ No initial state found";
             }
         }
         catch (Exception ex)
         {
-            debugText = $"❌ Error loading initial status: {ex.Message}";
+            debugText = $"❌ Error in OnInitializedAsync: {ex.Message}";
+            Console.WriteLine($"Error in OnInitializedAsync: {ex}");
+        }
+        finally
+        {
+            isInitialized = true;
+            StateHasChanged();
         }
     }
 
-    private async Task ToggleStatus()
+    private async Task HandleClick()
     {
-        try 
+        try
         {
-            debugText = "🔄 Button clicked!";
-            var updated = new DeviceStatus { Id = currentId, IsOn = !isOn };
+            debugText = "🖱️ Button clicked!";
+            Console.WriteLine("Button clicked - Starting HandleClick");
+            StateHasChanged();
 
+            // Create updated status object
+            var updated = new DeviceStatus { Id = currentId, IsOn = !isOn };
+            debugText = $"📦 Attempting to update to: Id={currentId}, IsOn={!isOn}";
+            Console.WriteLine($"Current state - Id: {currentId}, IsOn: {isOn}");
+
+            HttpResponseMessage response;
             if (currentId == 0)
             {
+                // Create new status if none exists
                 debugText = "🆕 Creating new status...";
-                var response = await Http.PostAsJsonAsync("api/status", updated);
-                if (response.IsSuccessStatusCode)
+                Console.WriteLine("Attempting POST request");
+                response = await Http.PostAsJsonAsync("api/status", updated);
+                debugText = $"📦 POST Response: {response.StatusCode}";
+                Console.WriteLine($"POST Response: {response.StatusCode}");
+                
+                if (!response.IsSuccessStatusCode)
                 {
-                    var created = await response.Content.ReadFromJsonAsync<DeviceStatus>();
-                    if (created != null)
-                    {
-                        currentId = created.Id;
-                        isOn = created.IsOn;
-                        debugText = $"✅ Created: Id={currentId}, IsOn={isOn}";
-                    }
-                }
-                else
-                {
-                    debugText = $"❌ Error creating status: {response.StatusCode}";
+                    var error = await response.Content.ReadAsStringAsync();
+                    debugText = $"❌ Error creating status: {response.StatusCode} - {error}";
+                    Console.WriteLine($"Error content: {error}");
+                    return;
                 }
             }
             else
             {
+                // Update existing status
                 debugText = $"✏️ Updating Id={currentId} to IsOn={!isOn}";
-                var response = await Http.PutAsJsonAsync($"api/status/{currentId}", updated);
-                if (response.IsSuccessStatusCode)
+                Console.WriteLine($"Attempting PUT request for Id: {currentId}");
+                response = await Http.PutAsJsonAsync($"api/status/{currentId}", updated);
+                debugText = $"📦 PUT Response: {response.StatusCode}";
+                Console.WriteLine($"PUT Response: {response.StatusCode}");
+                
+                if (!response.IsSuccessStatusCode)
                 {
-                    var result = await response.Content.ReadFromJsonAsync<DeviceStatus>();
-                    if (result != null)
-                    {
-                        isOn = result.IsOn;
-                        debugText = $"✅ Updated: Id={currentId}, IsOn={isOn}";
-                    }
-                }
-                else
-                {
-                    debugText = $"❌ Error updating status: {response.StatusCode}";
+                    var error = await response.Content.ReadAsStringAsync();
+                    debugText = $"❌ Error updating status: {response.StatusCode} - {error}";
+                    Console.WriteLine($"Error content: {error}");
+                    return;
                 }
             }
 
-            StateHasChanged();
+            var result = await response.Content.ReadFromJsonAsync<DeviceStatus>();
+            if (result != null)
+            {
+                currentId = result.Id;
+                isOn = result.IsOn;
+                debugText = $"✅ Success: Id={currentId}, IsOn={isOn}";
+                Console.WriteLine($"Updated state - Id: {currentId}, IsOn: {isOn}");
+            }
         }
         catch (Exception ex)
         {
-            debugText = $"❌ Error: {ex.Message}";
+            debugText = $"❌ Error in HandleClick: {ex.Message}";
+            Console.WriteLine($"Exception in HandleClick: {ex}");
+        }
+        finally
+        {
+            StateHasChanged();
         }
     }
 }
