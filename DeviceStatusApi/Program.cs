@@ -6,8 +6,12 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Registrera databasen
 builder.Services.AddDbContext<AppDbContext>(options =>
-   options.UseSqlServer("Server=(localdb)\\mssqllocaldb;Database=DeviceDb;Trusted_Connection=True;")
+    options.UseMySql(
+        "Server=localhost;Port=8889;Database=device_db;User=root;Password=root;",
+        new MySqlServerVersion(new Version(8, 0, 40))
+    )
 );
+
 
 var app = builder.Build();
 
