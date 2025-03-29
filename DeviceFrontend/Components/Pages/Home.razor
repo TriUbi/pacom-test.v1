@@ -1,19 +1,23 @@
 ﻿@page "/status"
 @inject HttpClient Http
 
-<h3>Status: 
+<h3>Status:
     <span style="color:@(isOn ? "green" : "red")">
         @(isOn ? "ON 🟢" : "OFF 🔴")
     </span>
 </h3>
 
-<button @onclick="ToggleStatus">
+<button class="btn btn-primary" @onclick="ToggleStatus">
     @(isOn ? "Turn OFF" : "Turn ON")
 </button>
+
+<p><strong>Debug:</strong> Id=@currentId | IsOn=@isOn</p>
+<p style="font-style: italic; color: gray;">@debugText</p>
 
 @code {
     private bool isOn = false;
     private int currentId;
+    private string debugText = "";
 
     public class DeviceStatus
     {
@@ -23,42 +27,72 @@
 
     protected override async Task OnInitializedAsync()
     {
-        var result = await Http.GetFromJsonAsync<DeviceStatus>("http://localhost:5277/api/status/first");
-        if (result != null)
+        try
         {
-            isOn = result.IsOn;
-            currentId = result.Id;
-            Console.WriteLine($"ℹ️ Initial value: Id={currentId}, IsOn={isOn}");
+            var result = await Http.GetFromJsonAsync<DeviceStatus>("api/status/first");
+            if (result != null)
+            {
+                isOn = result.IsOn;
+                currentId = result.Id;
+                debugText = $"📦 Initial: Id={currentId}, IsOn={isOn}";
+            }
+        }
+        catch (Exception ex)
+        {
+            debugText = $"❌ Error loading initial status: {ex.Message}";
         }
     }
 
     private async Task ToggleStatus()
     {
-        isOn = !isOn;
-        Console.WriteLine($"🔁 ToggleStatus called. New IsOn = {isOn}, currentId = {currentId}");
-
-        var updated = new DeviceStatus { Id = currentId, IsOn = isOn };
-
-        if (currentId == 0)
+        try 
         {
-            Console.WriteLine("🚀 Sending POST...");
-            var response = await Http.PostAsJsonAsync("http://localhost:5277/api/status", updated);
+            debugText = "🔄 Button clicked!";
+            var updated = new DeviceStatus { Id = currentId, IsOn = !isOn };
 
-            if (response.IsSuccessStatusCode)
+            if (currentId == 0)
             {
-                var created = await response.Content.ReadFromJsonAsync<DeviceStatus>();
-                currentId = created?.Id ?? 0;
-                Console.WriteLine($"✅ Created in backend! New Id = {currentId}");
+                debugText = "🆕 Creating new status...";
+                var response = await Http.PostAsJsonAsync("api/status", updated);
+                if (response.IsSuccessStatusCode)
+                {
+                    var created = await response.Content.ReadFromJsonAsync<DeviceStatus>();
+                    if (created != null)
+                    {
+                        currentId = created.Id;
+                        isOn = created.IsOn;
+                        debugText = $"✅ Created: Id={currentId}, IsOn={isOn}";
+                    }
+                }
+                else
+                {
+                    debugText = $"❌ Error creating status: {response.StatusCode}";
+                }
             }
             else
             {
-                Console.WriteLine("❌ POST failed.");
+                debugText = $"✏️ Updating Id={currentId} to IsOn={!isOn}";
+                var response = await Http.PutAsJsonAsync($"api/status/{currentId}", updated);
+                if (response.IsSuccessStatusCode)
+                {
+                    var result = await response.Content.ReadFromJsonAsync<DeviceStatus>();
+                    if (result != null)
+                    {
+                        isOn = result.IsOn;
+                        debugText = $"✅ Updated: Id={currentId}, IsOn={isOn}";
+                    }
+                }
+                else
+                {
+                    debugText = $"❌ Error updating status: {response.StatusCode}";
+                }
             }
+
+            StateHasChanged();
         }
-        else
+        catch (Exception ex)
         {
-            Console.WriteLine("🔄 Sending PUT...");
-            await Http.PutAsJsonAsync($"http://localhost:5277/api/status/{currentId}", updated);
+            debugText = $"❌ Error: {ex.Message}";
         }
     }
 }

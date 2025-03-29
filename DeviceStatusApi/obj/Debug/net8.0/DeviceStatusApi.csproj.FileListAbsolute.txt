@@ -163,3 +163,11 @@
 /Users/trini/Desktop/pacom/DeviceStatusApi/obj/Debug/net8.0/DeviceStatusApi.pdb
 /Users/trini/Desktop/pacom/DeviceStatusApi/obj/Debug/net8.0/DeviceStatusApi.genruntimeconfig.cache
 /Users/trini/Desktop/pacom/DeviceStatusApi/obj/Debug/net8.0/ref/DeviceStatusApi.dll
+/Users/trini/Desktop/pacom/DeviceStatusApi/bin/Debug/net8.0/Microsoft.Extensions.DependencyInjection.Abstractions.dll
+/Users/trini/Desktop/pacom/DeviceStatusApi/bin/Debug/net8.0/Microsoft.Extensions.Diagnostics.Abstractions.dll
+/Users/trini/Desktop/pacom/DeviceStatusApi/bin/Debug/net8.0/Microsoft.Extensions.Hosting.Abstractions.dll
+/Users/trini/Desktop/pacom/DeviceStatusApi/bin/Debug/net8.0/Microsoft.Extensions.Logging.Abstractions.dll
+/Users/trini/Desktop/pacom/DeviceStatusApi/bin/Debug/net8.0/Microsoft.Extensions.ObjectPool.dll
+/Users/trini/Desktop/pacom/DeviceStatusApi/bin/Debug/net8.0/Microsoft.Extensions.Options.dll
+/Users/trini/Desktop/pacom/DeviceStatusApi/bin/Debug/net8.0/Newtonsoft.Json.dll
+/Users/trini/Desktop/pacom/DeviceStatusApi/bin/Debug/net8.0/System.Net.WebSockets.WebSocketProtocol.dll

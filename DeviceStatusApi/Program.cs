@@ -1,6 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using DeviceStatusApi.Data;
 using DeviceStatusApi.Models;
+using DeviceStatusApi;
+using Microsoft.AspNetCore.Cors;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,7 +14,20 @@ builder.Services.AddDbContext<AppDbContext>(options =>
     )
 );
 
+builder.Services.AddCors(options =>
+{
+    options.AddDefaultPolicy(builder =>
+    {
+        builder.WithOrigins("http://localhost:5028") // Frontend URL
+               .AllowAnyHeader()
+               .AllowAnyMethod();
+    });
+});
+
 var app = builder.Build();
+
+// Enable CORS
+app.UseCors();
 
 // Hämta alla statusar
 app.MapGet("/api/status", async (AppDbContext db) =>
@@ -38,7 +53,7 @@ app.MapGet("/api/status/{id}", async (AppDbContext db, int id) =>
 
 // Skapa ny status
 app.MapPost("/api/status", async (AppDbContext db, DeviceStatus input) =>
-{    Console.WriteLine($"POST recibido: IsOn={input.IsOn}");
+{
     db.Status.Add(input);
     await db.SaveChangesAsync();
     return Results.Created($"/api/status/{input.Id}", input);
@@ -65,16 +80,5 @@ app.MapDelete("/api/status/{id}", async (AppDbContext db, int id) =>
     await db.SaveChangesAsync();
     return Results.NoContent();
 });
-
-
-// TEST
-app.MapPost("/api/test", async (AppDbContext db) =>
-{
-    var nuevo = new DeviceStatus { IsOn = true };
-    db.Status.Add(nuevo);
-    await db.SaveChangesAsync();
-    return Results.Ok(nuevo);
-});
-
 
 app.Run();
