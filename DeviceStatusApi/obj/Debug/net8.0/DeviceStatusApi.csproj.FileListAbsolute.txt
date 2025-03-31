@@ -172,3 +172,4 @@
 /Users/trini/Desktop/pacom/DeviceStatusApi/bin/Debug/net8.0/Newtonsoft.Json.dll
 /Users/trini/Desktop/pacom/DeviceStatusApi/bin/Debug/net8.0/System.Net.WebSockets.WebSocketProtocol.dll
 /Users/trini/Desktop/pacom/DeviceStatusApi/bin/Debug/net8.0/NModbus.dll
+/Users/trini/Desktop/pacom/DeviceStatusApi/bin/Debug/net8.0/NModbus4.dll
