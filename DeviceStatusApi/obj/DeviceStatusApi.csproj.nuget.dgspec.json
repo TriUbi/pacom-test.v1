@@ -70,6 +70,14 @@
               "target": "Package",
               "version": "[8.0.0, )"
             },
+            "NModbus": {
+              "target": "Package",
+              "version": "[3.0.81, )"
+            },
+            "NModbus4": {
+              "target": "Package",
+              "version": "[2.1.0, )"
+            },
             "Pomelo.EntityFrameworkCore.MySql": {
               "target": "Package",
               "version": "[8.0.0, )"
