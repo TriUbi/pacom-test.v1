@@ -3,6 +3,7 @@ using DeviceStatusApi.Data;
 using DeviceStatusApi.Models;
 using DeviceStatusApi;
 using Microsoft.AspNetCore.Cors;
+using System.Net.Sockets;
 using NModbus;
 
 var builder = WebApplication.CreateBuilder(args);
