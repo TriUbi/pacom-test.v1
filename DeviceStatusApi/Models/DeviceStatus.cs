@@ -9,6 +9,8 @@ namespace DeviceStatusApi.Models
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
 
+        public string Name { get; set; } = string.Empty;
+
         public bool IsOn { get; set; }
     }
 }
