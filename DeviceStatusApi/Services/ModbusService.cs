@@ -1,7 +1,7 @@
 using System.Net.Sockets;
 using NModbus;
+public class ModbusService : IDisposable
 
-public class ModbusService
 {
     private readonly IModbusMaster _master;
     private readonly TcpClient _client;
