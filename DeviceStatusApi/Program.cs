@@ -3,6 +3,7 @@ using DeviceStatusApi.Data;
 using DeviceStatusApi.Models;
 using DeviceStatusApi;
 using Microsoft.AspNetCore.Cors;
+using NModbus;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -61,6 +62,13 @@ app.MapPost("/api/status", async (AppDbContext db, DeviceStatus input) =>
 {
     db.Status.Add(input);
     await db.SaveChangesAsync();
+
+    //skicka till Modbus
+    using var client = new TcpClient("127.0.0.1", 502);
+    var factory = new ModbusFactory();
+    var master = factory.CreateMaster(client);
+    master.WriteSingleCoil(1, 0, input.IsOn); 
+
     return Results.Created($"/api/status/{input.Id}", input);
 });
 
@@ -68,6 +76,13 @@ app.MapPost("/api/status", async (AppDbContext db, DeviceStatus input) =>
 app.MapPut("/api/status/{id}", async (AppDbContext db, int id, DeviceStatus updated) =>
 {
     var status = await db.Status.FindAsync(id);
+    
+//skicka till Modbus
+    using var client = new TcpClient("127.0.0.1", 502);
+    var factory = new ModbusFactory();
+    var master = factory.CreateMaster(client);
+    master.WriteSingleCoil(1, 0, updated.IsOn); 
+
     if (status is null) return Results.NotFound();
 
     status.IsOn = updated.IsOn;
