@@ -65,7 +65,7 @@ app.MapPost("/api/status", async (AppDbContext db, DeviceStatus input) =>
     await db.SaveChangesAsync();
 
     //skicka till Modbus
-    using var client = new TcpClient("127.0.0.1", 502);
+    using var client = new TcpClient("127.0.0.1", 5020);
     var factory = new ModbusFactory();
     var master = factory.CreateMaster(client);
     master.WriteSingleCoil(1, 0, input.IsOn); 
@@ -79,7 +79,7 @@ app.MapPut("/api/status/{id}", async (AppDbContext db, int id, DeviceStatus upda
     var status = await db.Status.FindAsync(id);
     
 //skicka till Modbus
-    using var client = new TcpClient("127.0.0.1", 502);
+    using var client = new TcpClient("127.0.0.1", 5020);
     var factory = new ModbusFactory();
     var master = factory.CreateMaster(client);
     master.WriteSingleCoil(1, 0, updated.IsOn); 
