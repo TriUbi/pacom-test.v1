@@ -19,7 +19,13 @@ public class ModbusService
         return coils[0];
     }
 
-       public void WriteCoilStatus(byte slaveId, ushort address, bool value)
+    public void WriteCoilStatus(byte slaveId, ushort address, bool value)
     {
-        _master.WriteSingleCoil_
-    };
+        _master.WriteSingleCoil(slaveId, address, value);
+    }
+
+    public void Dispose()
+    {
+        _client?.Close();
+    }
+}
