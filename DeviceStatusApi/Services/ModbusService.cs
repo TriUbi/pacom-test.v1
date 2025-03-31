@@ -8,7 +8,7 @@ public class ModbusService : IDisposable
 
     public ModbusService()
     {
-        _client = new TcpClient("127.0.0.1", 502); 
+       _client = new TcpClient("127.0.0.1", 5020);  
         var factory = new ModbusFactory();
         _master = factory.CreateMaster(_client);
     }

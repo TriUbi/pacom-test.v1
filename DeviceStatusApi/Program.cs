@@ -44,7 +44,7 @@ app.MapGet("/api/status", async (AppDbContext db) =>
 app.MapGet("/api/status/first", async (AppDbContext db) =>
 {
     var current = await db.Status
-        .OrderBy(s => s.Id)
+        .OrderByDescending(s => s.Id)
         .FirstOrDefaultAsync();
 
     return current is null
