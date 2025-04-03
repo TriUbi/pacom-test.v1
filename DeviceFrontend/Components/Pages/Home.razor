@@ -1,135 +1,114 @@
 ﻿@page "/"
-@page "/status"
 @rendermode InteractiveServer
-@using DeviceFrontend.Components.Layout
-@layout MainLayout
 @inject HttpClient Http
 
-<h3>Status:
-    <span style="color:@(isOn ? "green" : "red")">
-        @(isOn ? "ON 🟢" : "OFF 🔴")
-    </span>
-</h3>
+<h2>Enheter i sjukhuset 🏥</h2>
 
-<button class="btn btn-primary" @onclick="HandleClick">
-    @(isOn ? "Turn OFF" : "Turn ON")
-</button>
+<!-- Form för att lägga till ny enhet -->
+<div class="mb-3">
+    <input @bind="newDeviceName" placeholder="Namn på ny enhet" class="form-control" />
+    <button class="btn btn-success mt-2" @onclick="AddDevice">Lägg till enhet</button>
+</div>
 
+<!-- Tabell med alla enheter -->
+@if (devices == null)
+{
+    <p>Laddar enheter...</p>
+}
+else if (devices.Count == 0)
+{
+    <p>Inga enheter tillagda ännu.</p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Namn</th>
+                <th>Status</th>
+                <th>Styr</th>
+                <th>Ta bort</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var device in devices)
+            {
+                <tr>
+                    <td>@device.Name</td>
+                    <td style="color:@(device.IsOn ? "green" : "red")">
+                        @(device.IsOn ? "ON 🟢" : "OFF 🔴")
+                    </td>
+                    <td>
+                        <button class="btn btn-primary" @onclick="() => ToggleDevice(device)">
+                            @(device.IsOn ? "Stäng av" : "Starta")
+                        </button>
+                    </td>
+                    <td>
+                        <button class="btn btn-danger" @onclick="() => DeleteDevice(device.Id)">🗑</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
 
 @code {
-    private bool isOn = false;
-    private int currentId;
-    private string debugText = "";
-    private bool isInitialized = false;
+    private List<DeviceStatus>? devices;
+    private string newDeviceName = "";
 
     public class DeviceStatus
     {
         public int Id { get; set; }
+        public string Name { get; set; } = "";
         public bool IsOn { get; set; }
     }
 
     protected override async Task OnInitializedAsync()
     {
-        if (isInitialized) return;
-
-        try
-        {
-            debugText = "🔄 Starting OnInitializedAsync...";
-            StateHasChanged();
-
-            // Get initial status from backend
-            var result = await Http.GetFromJsonAsync<DeviceStatus>("http://localhost:5277/api/status/first");
-            debugText = $"📦 Result from api/status/first: {(result == null ? "null" : $"Id={result.Id}, IsOn={result.IsOn}")}";
-            
-            if (result != null)
-            {
-                isOn = result.IsOn;
-                currentId = result.Id;
-                debugText = $"✅ Initial state loaded: Id={currentId}, IsOn={isOn}";
-            }
-            else
-            {
-                debugText = "⚠️ No initial state found";
-            }
-        }
-        catch (Exception ex)
-        {
-            debugText = $"❌ Error in OnInitializedAsync: {ex.Message}";
-            Console.WriteLine($"Error in OnInitializedAsync: {ex}");
-        }
-        finally
-        {
-            isInitialized = true;
-            StateHasChanged();
-        }
+        await LoadDevices();
     }
 
-    private async Task HandleClick()
+    private async Task LoadDevices()
     {
         try
         {
-            debugText = "🖱️ Button clicked!";
-            Console.WriteLine("Button clicked - Starting HandleClick");
-            StateHasChanged();
-
-            // Create updated status object
-            var updated = new DeviceStatus { Id = currentId, IsOn = !isOn };
-            debugText = $"📦 Attempting to update to: Id={currentId}, IsOn={!isOn}";
-            Console.WriteLine($"Current state - Id: {currentId}, IsOn: {isOn}");
-
-            HttpResponseMessage response;
-            if (currentId == 0)
-            {
-                // Create new status if none exists
-                debugText = "🆕 Creating new status...";
-                Console.WriteLine("Attempting POST request");
-                response = await Http.PostAsJsonAsync("api/status", updated);
-                debugText = $"📦 POST Response: {response.StatusCode}";
-                Console.WriteLine($"POST Response: {response.StatusCode}");
-                
-                if (!response.IsSuccessStatusCode)
-                {
-                    var error = await response.Content.ReadAsStringAsync();
-                    debugText = $"❌ Error creating status: {response.StatusCode} - {error}";
-                    Console.WriteLine($"Error content: {error}");
-                    return;
-                }
-            }
-            else
-            {
-                // Update existing status
-                debugText = $"✏️ Updating Id={currentId} to IsOn={!isOn}";
-                Console.WriteLine($"Attempting PUT request for Id: {currentId}");
-                response = await Http.PutAsJsonAsync($"api/status/{currentId}", updated);
-                debugText = $"📦 PUT Response: {response.StatusCode}";
-                Console.WriteLine($"PUT Response: {response.StatusCode}");
-                
-                if (!response.IsSuccessStatusCode)
-                {
-                    var error = await response.Content.ReadAsStringAsync();
-                    debugText = $"❌ Error updating status: {response.StatusCode} - {error}";
-                    Console.WriteLine($"Error content: {error}");
-                    return;
-                }
-            }
-
-            var result = await response.Content.ReadFromJsonAsync<DeviceStatus>();
-            if (result != null)
-            {
-                currentId = result.Id;
-                isOn = result.IsOn;
-                debugText = $"✅ Success: Id={currentId}, IsOn={isOn}";
-                Console.WriteLine($"Updated state - Id: {currentId}, IsOn: {isOn}");
-            }
+            devices = await Http.GetFromJsonAsync<List<DeviceStatus>>("http://localhost:5277/api/status");
         }
         catch (Exception ex)
         {
-            debugText = $"❌ Error in HandleClick: {ex.Message}";
-            Console.WriteLine($"Exception in HandleClick: {ex}");
+            Console.WriteLine("Error loading devices: " + ex.Message);
         }
-        finally
+    }
+
+    private async Task ToggleDevice(DeviceStatus device)
+    {
+        device.IsOn = !device.IsOn;
+        var response = await Http.PutAsJsonAsync($"http://localhost:5277/api/status/{device.Id}", device);
+        if (response.IsSuccessStatusCode)
         {
-            StateHasChanged();
+            await LoadDevices();
+        }
+    }
+
+    private async Task DeleteDevice(int id)
+    {
+        var response = await Http.DeleteAsync($"http://localhost:5277/api/status/{id}");
+        if (response.IsSuccessStatusCode)
+        {
+            await LoadDevices();
+        }
+    }
+
+    private async Task AddDevice()
+    {
+        if (string.IsNullOrWhiteSpace(newDeviceName)) return;
+
+        var newDevice = new DeviceStatus { Name = newDeviceName, IsOn = false };
+        var response = await Http.PostAsJsonAsync("http://localhost:5277/api/status", newDevice);
+        if (response.IsSuccessStatusCode)
+        {
+            newDeviceName = "";
+            await LoadDevices();
         }
     }
 }

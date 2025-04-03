@@ -1,0 +1,79 @@
+﻿@page "/modbus"
+@rendermode InteractiveServer
+@inject HttpClient Http
+
+<h2>Modbus-status från simulator 🔌</h2>
+
+@if (isLoading)
+{
+    <p>Läser från Modbus...</p>
+}
+else if (hasError)
+{
+    <p class="text-danger">❌ Kunde inte läsa från Modbus-servern.</p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Namn</th>
+                <th>ID</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var device in devices)
+            {
+                <tr>
+                    <td>@device.Name</td>
+                    <td>@device.Id</td>
+                    <td style="color:@(device.IsOn ? "green" : "red")">
+                        @(device.IsOn ? "ON 🟢" : "OFF 🔴")
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <button class="btn btn-secondary mt-3" @onclick="LoadStatus">🔄 Läs om</button>
+}
+
+@code {
+    private List<ModbusDevice> devices = new();
+    private bool isLoading = true;
+    private bool hasError = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadStatus();
+    }
+
+    private async Task LoadStatus()
+    {
+        isLoading = true;
+        hasError = false;
+
+        try
+        {
+            var response = await Http.GetFromJsonAsync<List<ModbusDevice>>("http://localhost:5277/api/modbus/status");
+            if (response != null)
+                devices = response;
+        }
+        catch
+        {
+            hasError = true;
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    public class ModbusDevice
+    {
+        public int Id { get; set; }
+        public string Name { get; set; } = "";
+        public bool IsOn { get; set; }
+    }
+}

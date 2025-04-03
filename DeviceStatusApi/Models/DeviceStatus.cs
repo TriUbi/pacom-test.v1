@@ -11,6 +11,9 @@ namespace DeviceStatusApi.Models
 
         public string Name { get; set; } = string.Empty;
 
+        public int CoilAddress { get; set; }
+
+
         public bool IsOn { get; set; }
     }
 }
