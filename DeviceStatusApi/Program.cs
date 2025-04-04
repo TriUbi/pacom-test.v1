@@ -3,6 +3,9 @@ using DeviceStatusApi.Data;
 using DeviceStatusApi.Models;
 using System.Net.Sockets;
 using NModbus;
+using DeviceStatusApi.Services;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -133,5 +136,16 @@ app.MapGet("/api/modbus/status", async (AppDbContext db) =>
         return Results.Problem($"Modbus-läsfel: {ex.Message}");
     }
 });
+
+builder.Services.AddSingleton<TokenService>();
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        var tokenService = new TokenService(builder.Configuration);
+        options.TokenValidationParameters = tokenService.GetValidationParameters();
+    });
+
+app.UseAuthentication();
+app.UseAuthorization();
 
 app.Run();
