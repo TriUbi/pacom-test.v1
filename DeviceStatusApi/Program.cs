@@ -6,7 +6,6 @@ using NModbus;
 using DeviceStatusApi.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 
-
 var builder = WebApplication.CreateBuilder(args);
 
 // Register database
@@ -17,6 +16,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
     )
 );
 
+// CORS
 builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(builder =>
@@ -28,19 +28,34 @@ builder.Services.AddCors(options =>
     });
 });
 
+builder.Services.AddControllers();
+
+builder.Services.AddSingleton<TokenService>();
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        var tokenService = new TokenService(builder.Configuration);
+        options.TokenValidationParameters = tokenService.GetValidationParameters();
+    });
+
+builder.Services.AddAuthorization(); 
+
 var app = builder.Build();
 
+// Middleware
 app.UseCors(x => x
     .SetIsOriginAllowed(origin => origin == "http://localhost:5028")
     .AllowAnyMethod()
     .AllowAnyHeader()
     .AllowCredentials());
 
-// Get all statuses
+app.UseAuthentication();
+app.UseAuthorization();
+
+// Endpoints
 app.MapGet("/api/status", async (AppDbContext db) =>
     await db.Status.ToListAsync());
 
-// Get first status
 app.MapGet("/api/status/first", async (AppDbContext db) =>
 {
     var current = await db.Status
@@ -52,13 +67,11 @@ app.MapGet("/api/status/first", async (AppDbContext db) =>
         : Results.Ok(current);
 });
 
-// Get by ID
 app.MapGet("/api/status/{id}", async (AppDbContext db, int id) =>
     await db.Status.FindAsync(id) is DeviceStatus status
         ? Results.Ok(status)
         : Results.NotFound());
 
-// Create
 app.MapPost("/api/status", async (AppDbContext db, DeviceStatus input) =>
 {
     var nextCoil = await db.Status.CountAsync();
@@ -72,11 +85,9 @@ app.MapPost("/api/status", async (AppDbContext db, DeviceStatus input) =>
     var master = factory.CreateMaster(client);
     master.WriteSingleCoil(1, (ushort)input.CoilAddress, input.IsOn);
 
-
     return Results.Created($"/api/status/{input.Id}", input);
 });
 
-// Update
 app.MapPut("/api/status/{id}", async (AppDbContext db, int id, DeviceStatus updated) =>
 {
     var status = await db.Status.FindAsync(id);
@@ -93,7 +104,6 @@ app.MapPut("/api/status/{id}", async (AppDbContext db, int id, DeviceStatus upda
     return Results.Ok(status);
 });
 
-// Delete
 app.MapDelete("/api/status/{id}", async (AppDbContext db, int id) =>
 {
     var status = await db.Status.FindAsync(id);
@@ -104,7 +114,6 @@ app.MapDelete("/api/status/{id}", async (AppDbContext db, int id) =>
     return Results.NoContent();
 });
 
-// Read Modbus statuses
 app.MapGet("/api/modbus/status", async (AppDbContext db) =>
 {
     try
@@ -137,15 +146,5 @@ app.MapGet("/api/modbus/status", async (AppDbContext db) =>
     }
 });
 
-builder.Services.AddSingleton<TokenService>();
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddJwtBearer(options =>
-    {
-        var tokenService = new TokenService(builder.Configuration);
-        options.TokenValidationParameters = tokenService.GetValidationParameters();
-    });
-
-app.UseAuthentication();
-app.UseAuthorization();
-
+app.MapControllers();
 app.Run();

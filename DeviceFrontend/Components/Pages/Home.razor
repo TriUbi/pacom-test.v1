@@ -1,55 +1,61 @@
 ﻿@page "/"
 @rendermode InteractiveServer
 @inject HttpClient Http
+@using DeviceFrontend.Helpers
 
-<h2>Enheter i sjukhuset 🏥</h2>
-
-<!-- Form för att lägga till ny enhet -->
-<div class="mb-3">
-    <input @bind="newDeviceName" placeholder="Namn på ny enhet" class="form-control" />
-    <button class="btn btn-success mt-2" @onclick="AddDevice">Lägg till enhet</button>
-</div>
-
-<!-- Tabell med alla enheter -->
-@if (devices == null)
+@if (string.IsNullOrEmpty(JwtStore.Token))
 {
-    <p>Laddar enheter...</p>
-}
-else if (devices.Count == 0)
-{
-    <p>Inga enheter tillagda ännu.</p>
+    <p class="text-danger">🔒 Du måste <a href="/login">logga in</a> för att se enheterna.</p>
 }
 else
 {
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Namn</th>
-                <th>Status</th>
-                <th>Styr</th>
-                <th>Ta bort</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var device in devices)
-            {
+    <h2>Enheter i sjukhuset 🏥</h2>
+
+    <div class="mb-3">
+        <input @bind="newDeviceName" placeholder="Namn på ny enhet" class="form-control" />
+        <button class="btn btn-success mt-2" @onclick="AddDevice">Lägg till enhet</button>
+    </div>
+
+    @if (devices == null)
+    {
+        <p>Laddar enheter...</p>
+    }
+    else if (devices.Count == 0)
+    {
+        <p>Inga enheter tillagda ännu.</p>
+    }
+    else
+    {
+        <table class="table">
+            <thead>
                 <tr>
-                    <td>@device.Name</td>
-                    <td style="color:@(device.IsOn ? "green" : "red")">
-                        @(device.IsOn ? "ON 🟢" : "OFF 🔴")
-                    </td>
-                    <td>
-                        <button class="btn btn-primary" @onclick="() => ToggleDevice(device)">
-                            @(device.IsOn ? "Stäng av" : "Starta")
-                        </button>
-                    </td>
-                    <td>
-                        <button class="btn btn-danger" @onclick="() => DeleteDevice(device.Id)">🗑</button>
-                    </td>
+                    <th>Namn</th>
+                    <th>Status</th>
+                    <th>Styr</th>
+                    <th>Ta bort</th>
                 </tr>
-            }
-        </tbody>
-    </table>
+            </thead>
+            <tbody>
+                @foreach (var device in devices)
+                {
+                    <tr>
+                        <td>@device.Name</td>
+                        <td style="color:@(device.IsOn ? "green" : "red")">
+                            @(device.IsOn ? "ON 🟢" : "OFF 🔴")
+                        </td>
+                        <td>
+                            <button class="btn btn-primary" @onclick="() => ToggleDevice(device)">
+                                @(device.IsOn ? "Stäng av" : "Starta")
+                            </button>
+                        </td>
+                        <td>
+                            <button class="btn btn-danger" @onclick="() => DeleteDevice(device.Id)">🗑</button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
 }
 
 @code {
@@ -65,19 +71,15 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        await LoadDevices();
+        if (!string.IsNullOrEmpty(JwtStore.Token))
+        {
+            await LoadDevices();
+        }
     }
 
     private async Task LoadDevices()
     {
-        try
-        {
-            devices = await Http.GetFromJsonAsync<List<DeviceStatus>>("http://localhost:5277/api/status");
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine("Error loading devices: " + ex.Message);
-        }
+        devices = await Http.GetFromJsonAsync<List<DeviceStatus>>("http://localhost:5277/api/status");
     }
 
     private async Task ToggleDevice(DeviceStatus device)

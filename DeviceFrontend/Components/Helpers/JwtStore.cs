@@ -1,4 +1,7 @@
-public static class JwtStore
+namespace DeviceFrontend.Helpers
 {
-    public static string? Token { get; set; }
+    public static class JwtStore
+    {
+        public static string? Token { get; set; }
+    }
 }

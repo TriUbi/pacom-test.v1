@@ -1,10 +1,11 @@
 @page "/login"
 @inject HttpClient Http
 @inject NavigationManager Nav
+@using DeviceFrontend.Helpers
 
-<h3>Logga in 🛡️</h3>
+<h3>🔐 Logga in</h3>
 
-@if (errorMessage != null)
+@if (!string.IsNullOrEmpty(errorMessage))
 {
     <p class="text-danger">@errorMessage</p>
 }
@@ -15,41 +16,34 @@
 <div class="mb-3">
     <input class="form-control" type="password" placeholder="Lösenord" @bind="password" />
 </div>
-<button class="btn btn-primary" @onclick="Login">Logga in</button>
+<button class="btn btn-primary" @onclick="PerformLogin">Logga in</button>
 
 @code {
     private string username = "";
     private string password = "";
     private string? errorMessage;
 
-    private async Task Login()
+    private async Task PerformLogin()
     {
         var loginData = new { username, password };
+        var response = await Http.PostAsJsonAsync("http://localhost:5277/api/auth/login", loginData);
 
-        try
+        if (response.IsSuccessStatusCode)
         {
-            var response = await Http.PostAsJsonAsync("http://localhost:5277/api/auth/login", loginData);
-
-            if (response.IsSuccessStatusCode)
+            var result = await response.Content.ReadFromJsonAsync<TokenResult>();
+            if (result is not null && !string.IsNullOrEmpty(result.Token))
             {
-                var result = await response.Content.ReadFromJsonAsync<TokenResult>();
-                if (result is not null)
-                {
-                    // Spara token i localStorage eller i minnet (för enkelhet, vi börjar med minnet)
-                    JwtStore.Token = result.Token;
-
-                    // Navigera till huvudvyn
-                    Nav.NavigateTo("/");
-                }
+                JwtStore.Token = result.Token;
+                Nav.NavigateTo("/");
             }
             else
             {
-                errorMessage = "Felaktigt användarnamn eller lösenord.";
+                errorMessage = "Tomt svar från servern.";
             }
         }
-        catch
+        else
         {
-            errorMessage = "Fel vid inloggning.";
+            errorMessage = "Felaktigt användarnamn eller lösenord.";
         }
     }
 
