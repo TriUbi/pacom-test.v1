@@ -20,7 +20,6 @@ else
     <div class="mb-3">
         <input @bind="newDeviceName" placeholder="Namn på ny enhet" class="form-control" />
         <button class="btn btn-success mt-2" @onclick="AddDevice">Lägg till enhet</button>
-        <button class="btn btn-outline-danger mt-2 ms-2" @onclick="Logout">Logga ut</button>
     </div>
 
     @if (devices == null)
@@ -62,6 +61,7 @@ else
                 }
             </tbody>
         </table>
+         <button class="btn btn-outline-danger mt-2 ms-2" @onclick="Logout">Logga ut</button>
     }
 }
 

@@ -1,52 +1,85 @@
 ﻿@page "/modbus"
 @rendermode InteractiveServer
 @inject HttpClient Http
+@inject IJSRuntime JS
+@inject NavigationManager Nav
+@using DeviceFrontend.Helpers
 
-<h2>Modbus-status från simulator 🔌</h2>
-
-@if (isLoading)
+@if (!isReady)
 {
-    <p>Läser från Modbus...</p>
+    <p>Laddar innehåll...</p>
 }
-else if (hasError)
+else if (string.IsNullOrEmpty(JwtStore.Token))
 {
-    <p class="text-danger">❌ Kunde inte läsa från Modbus-servern.</p>
+    <p class="text-danger">🔒 Du måste <a href="/login">logga in</a> för att se Modbus-status.</p>
 }
 else
 {
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Namn</th>
-                <th>ID</th>
-                <th>Status</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var device in devices)
-            {
-                <tr>
-                    <td>@device.Name</td>
-                    <td>@device.Id</td>
-                    <td style="color:@(device.IsOn ? "green" : "red")">
-                        @(device.IsOn ? "ON 🟢" : "OFF 🔴")
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
+    <h2>Modbus-status från simulator 🔌</h2>
 
-    <button class="btn btn-secondary mt-3" @onclick="LoadStatus">🔄 Läs om</button>
+    @if (isLoading)
+    {
+        <p>Läser från Modbus...</p>
+    }
+    else if (hasError)
+    {
+        <p class="text-danger">❌ Kunde inte läsa från Modbus-servern.</p>
+    }
+    else
+    {
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Namn</th>
+                    <th>ID</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var device in devices)
+                {
+                    <tr>
+                        <td>@device.Name</td>
+                        <td>@device.Id</td>
+                        <td style="color:@(device.IsOn ? "green" : "red")">
+                            @(device.IsOn ? "ON 🟢" : "OFF 🔴")
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+
+        <button class="btn btn-secondary mt-3" @onclick="LoadStatus">🔄 Läs om</button>
+    }
 }
 
 @code {
     private List<ModbusDevice> devices = new();
     private bool isLoading = true;
     private bool hasError = false;
+    private bool isReady = false;
 
-    protected override async Task OnInitializedAsync()
+    public class ModbusDevice
     {
-        await LoadStatus();
+        public int Id { get; set; }
+        public string Name { get; set; } = "";
+        public bool IsOn { get; set; }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            JwtStore.Token ??= await JS.InvokeAsync<string>("localStorage.getItem", "jwt");
+
+            if (!string.IsNullOrEmpty(JwtStore.Token))
+            {
+                await LoadStatus();
+            }
+
+            isReady = true;
+            StateHasChanged();
+        }
     }
 
     private async Task LoadStatus()
@@ -56,9 +89,9 @@ else
 
         try
         {
-            var response = await Http.GetFromJsonAsync<List<ModbusDevice>>("http://localhost:5277/api/modbus/status");
-            if (response != null)
-                devices = response;
+            var result = await Http.GetFromJsonAsync<List<ModbusDevice>>("http://localhost:5277/api/modbus/status");
+            if (result != null)
+                devices = result;
         }
         catch
         {
@@ -69,12 +102,4 @@ else
             isLoading = false;
         }
     }
-
-  public class ModbusDevice
-{
-    public int Id { get; set; }
-    public string Name { get; set; } = "";
-    public bool IsOn { get; set; }
-}
-
 }
