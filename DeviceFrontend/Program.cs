@@ -6,11 +6,17 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
+
 builder.Services.AddTransient<JwtHandler>();
-builder.Services.AddScoped(sp => new HttpClient(new JwtHandler())
+builder.Services.AddHttpClient("AuthorizedClient", client =>
 {
-    BaseAddress = new Uri("http://localhost:5277")
-});
+    client.BaseAddress = new Uri("http://localhost:5277");
+})
+.AddHttpMessageHandler<JwtHandler>();
+
+
+builder.Services.AddScoped(sp =>
+    sp.GetRequiredService<IHttpClientFactory>().CreateClient("AuthorizedClient"));
 
 var app = builder.Build();
 

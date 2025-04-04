@@ -1,7 +1,9 @@
 @page "/login"
 @inject HttpClient Http
 @inject NavigationManager Nav
+@inject IJSRuntime JS
 @using DeviceFrontend.Helpers
+@rendermode InteractiveServer
 
 <h3>🔐 Logga in</h3>
 
@@ -25,8 +27,12 @@
 
     private async Task PerformLogin()
     {
+
+    Console.WriteLine(" CLIIICKK");
+       var client = Http; 
+
         var loginData = new { username, password };
-        var response = await Http.PostAsJsonAsync("http://localhost:5277/api/auth/login", loginData);
+        var response = await client.PostAsJsonAsync("http://localhost:5277/api/auth/login", loginData);
 
         if (response.IsSuccessStatusCode)
         {
@@ -34,7 +40,8 @@
             if (result is not null && !string.IsNullOrEmpty(result.Token))
             {
                 JwtStore.Token = result.Token;
-                Nav.NavigateTo("/");
+                await JS.InvokeVoidAsync("localStorage.setItem", "jwt", result.Token);
+                Nav.NavigateTo("/", forceLoad: true);
             }
             else
             {

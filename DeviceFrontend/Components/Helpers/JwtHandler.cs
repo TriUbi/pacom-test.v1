@@ -7,11 +7,6 @@ namespace DeviceFrontend.Helpers
 {
     public class JwtHandler : DelegatingHandler
     {
-        public JwtHandler()
-        {
-            InnerHandler = new HttpClientHandler();
-        }
-
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
             if (!string.IsNullOrEmpty(JwtStore.Token))

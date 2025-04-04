@@ -1,9 +1,15 @@
 ﻿@page "/"
 @rendermode InteractiveServer
 @inject HttpClient Http
+@inject IJSRuntime JS
+@inject NavigationManager Nav
 @using DeviceFrontend.Helpers
 
-@if (string.IsNullOrEmpty(JwtStore.Token))
+@if (!isReady)
+{
+    <p>Laddar innehåll...</p>
+}
+else if (string.IsNullOrEmpty(JwtStore.Token))
 {
     <p class="text-danger">🔒 Du måste <a href="/login">logga in</a> för att se enheterna.</p>
 }
@@ -14,6 +20,7 @@ else
     <div class="mb-3">
         <input @bind="newDeviceName" placeholder="Namn på ny enhet" class="form-control" />
         <button class="btn btn-success mt-2" @onclick="AddDevice">Lägg till enhet</button>
+        <button class="btn btn-outline-danger mt-2 ms-2" @onclick="Logout">Logga ut</button>
     </div>
 
     @if (devices == null)
@@ -61,6 +68,7 @@ else
 @code {
     private List<DeviceStatus>? devices;
     private string newDeviceName = "";
+    private bool isReady = false;
 
     public class DeviceStatus
     {
@@ -69,11 +77,19 @@ else
         public bool IsOn { get; set; }
     }
 
-    protected override async Task OnInitializedAsync()
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (!string.IsNullOrEmpty(JwtStore.Token))
+        if (firstRender)
         {
-            await LoadDevices();
+            JwtStore.Token ??= await JS.InvokeAsync<string>("localStorage.getItem", "jwt");
+
+            if (!string.IsNullOrEmpty(JwtStore.Token))
+            {
+                await LoadDevices();
+            }
+
+            isReady = true;
+            StateHasChanged();
         }
     }
 
@@ -112,5 +128,13 @@ else
             newDeviceName = "";
             await LoadDevices();
         }
+    }
+
+    private async Task Logout()
+    {
+        JwtStore.Token = null;
+        await JS.InvokeVoidAsync("localStorage.removeItem", "jwt");
+        devices = null;
+        Nav.NavigateTo("/login", forceLoad: true);
     }
 }
