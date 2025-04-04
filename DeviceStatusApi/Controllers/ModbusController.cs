@@ -1,24 +1,42 @@
 using Microsoft.AspNetCore.Mvc;
+using DeviceStatusApi.Data;
+using Microsoft.EntityFrameworkCore;
+using NModbus;
+using System.Net.Sockets;
 
 [ApiController]
 [Route("api/[controller]")]
 public class ModbusController : ControllerBase
 {
-    // POST: api/modbus/set?coilAddress=1&value=true
-    [HttpPost("set")]
-    public IActionResult Set([FromQuery] int coilAddress, [FromQuery] bool value)
+    private readonly AppDbContext _db;
+
+    public ModbusController(AppDbContext db)
     {
-        using var modbus = new ModbusService();
-        modbus.WriteCoilStatus(1, (ushort)coilAddress, value);
-        return Ok($"Coil {coilAddress} set to {value}");
+        _db = db;
     }
 
-    // GET: api/modbus/status?coilAddress=1
     [HttpGet("status")]
-    public IActionResult GetStatus([FromQuery] int coilAddress)
+    public async Task<IActionResult> GetAllCoilStatus()
     {
-        using var modbus = new ModbusService();
-        var status = modbus.ReadCoilStatus(1, (ushort)coilAddress);
-        return Ok($"Coil {coilAddress} is {(status ? "ON" : "OFF")}");
+        var devices = await _db.Status.OrderBy(d => d.Id).ToListAsync();
+
+        using var client = new TcpClient("127.0.0.1", 5020);
+        var factory = new ModbusFactory();
+        var master = factory.CreateMaster(client);
+
+        var result = new List<object>();
+
+        foreach (var device in devices)
+        {
+            bool[] coil = master.ReadCoils(1, (ushort)device.CoilAddress, 1);
+            result.Add(new
+            {
+                device.Id,
+                device.Name,
+                IsOn = coil[0]
+            });
+        }
+
+        return Ok(result);
     }
 }

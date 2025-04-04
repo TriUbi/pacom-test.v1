@@ -56,16 +56,6 @@ app.UseAuthorization();
 app.MapGet("/api/status", async (AppDbContext db) =>
     await db.Status.ToListAsync());
 
-app.MapGet("/api/status/first", async (AppDbContext db) =>
-{
-    var current = await db.Status
-        .OrderByDescending(s => s.Id)
-        .FirstOrDefaultAsync();
-
-    return current is null
-        ? Results.Ok(new DeviceStatus { IsOn = false })
-        : Results.Ok(current);
-});
 
 app.MapGet("/api/status/{id}", async (AppDbContext db, int id) =>
     await db.Status.FindAsync(id) is DeviceStatus status
@@ -114,37 +104,7 @@ app.MapDelete("/api/status/{id}", async (AppDbContext db, int id) =>
     return Results.NoContent();
 });
 
-app.MapGet("/api/modbus/status", async (AppDbContext db) =>
-{
-    try
-    {
-        var devices = await db.Status.OrderBy(d => d.Id).ToListAsync();
 
-        using var client = new TcpClient("127.0.0.1", 5020);
-        var factory = new ModbusFactory();
-        var master = factory.CreateMaster(client);
-
-        var result = new List<object>();
-
-        foreach (var device in devices)
-        {
-            bool[] coil = master.ReadCoils(1, (ushort)device.CoilAddress, 1);
-
-            result.Add(new
-            {
-                Id = device.Id,
-                Name = device.Name,
-                IsOn = coil[0]
-            });
-        }
-
-        return Results.Ok(result);
-    }
-    catch (Exception ex)
-    {
-        return Results.Problem($"Modbus-läsfel: {ex.Message}");
-    }
-});
 
 app.MapControllers();
 app.Run();
