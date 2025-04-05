@@ -1,11 +1,19 @@
 using System.Net.Sockets;
 using NModbus;
+
+/// <summary>
+/// Hjälpklass för att läsa och skriva till Modbus-coils
+/// Ansluter till Modbus-servern via TCP
+/// </summary>
 public class ModbusService : IDisposable
 
 {
     private readonly IModbusMaster _master;
     private readonly TcpClient _client;
 
+      /// <summary>
+    /// Startar Modbus anslutning till localhost på port 5020
+    /// </summary>
     public ModbusService()
     {
        _client = new TcpClient("127.0.0.1", 5020);
@@ -13,6 +21,12 @@ public class ModbusService : IDisposable
         _master = factory.CreateMaster(_client);
     }
 
+    /// <summary>
+    /// Läser status (on/off) för en coil på en viss adress
+    /// </summary>
+    /// <param name="slaveId">ID för Modbus enheten</param>
+    /// <param name="address">Adress till coil som ska läsas</param>
+    /// <returns>True om coil är på (ON), annars false (OFF)</returns>
     public bool ReadCoilStatus(byte slaveId, ushort address)
     {
         bool[] coils = _master.ReadCoils(slaveId, address, 1);

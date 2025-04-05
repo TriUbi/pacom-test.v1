@@ -8,7 +8,10 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Register database
+/// <summary>
+/// Ansluter till databasen med MySQL och lägger till Entity Framework
+/// </summary>
+
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseMySql(
         "Server=localhost;Port=8889;Database=device_db;User=root;Password=root;",
@@ -16,7 +19,9 @@ builder.Services.AddDbContext<AppDbContext>(options =>
     )
 );
 
-// CORS
+/// <summary>
+/// Tillåter frontend att prata med backend (CORS)
+/// </summary>
 builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(builder =>
@@ -28,8 +33,14 @@ builder.Services.AddCors(options =>
     });
 });
 
+/// <summary>
+/// Gör det möjligt att använda Controllers (t.ex. i detta fall: AuthController, ModbusController)
+/// </summary>
 builder.Services.AddControllers();
 
+/// <summary>
+/// JWT-tjänst för att skapa och validera tokens
+/// </summary>
 builder.Services.AddSingleton<TokenService>();
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
@@ -42,26 +53,38 @@ builder.Services.AddAuthorization();
 
 var app = builder.Build();
 
-// Middleware
+/// <summary>
+/// Aktiverar CORS-policy
+/// </summary>
 app.UseCors(x => x
     .SetIsOriginAllowed(origin => origin == "http://localhost:5028")
     .AllowAnyMethod()
     .AllowAnyHeader()
     .AllowCredentials());
 
+/// <summary>
+/// Aktiverar autentisering + behörighetskontroll (JWT)
+/// </summary>
 app.UseAuthentication();
 app.UseAuthorization();
 
-// Endpoints
+/// <summary>
+/// Hämtar alla enheter från databasen
+/// </summary>
 app.MapGet("/api/status", async (AppDbContext db) =>
     await db.Status.ToListAsync());
 
-
+/// <summary>
+/// Hämtar en specifik enhet med ID
+/// </summary>
 app.MapGet("/api/status/{id}", async (AppDbContext db, int id) =>
     await db.Status.FindAsync(id) is DeviceStatus status
         ? Results.Ok(status)
         : Results.NotFound());
 
+/// <summary>
+/// Lägger till en ny enhet i databasen + skickar info till Modbus
+/// </summary>
 app.MapPost("/api/status", async (AppDbContext db, DeviceStatus input) =>
 {
     var nextCoil = await db.Status.CountAsync();
@@ -78,6 +101,9 @@ app.MapPost("/api/status", async (AppDbContext db, DeviceStatus input) =>
     return Results.Created($"/api/status/{input.Id}", input);
 });
 
+/// <summary>
+/// Uppdaterar en enhets status (on/off) + skriver till Modbus
+/// </summary>
 app.MapPut("/api/status/{id}", async (AppDbContext db, int id, DeviceStatus updated) =>
 {
     var status = await db.Status.FindAsync(id);
@@ -94,6 +120,9 @@ app.MapPut("/api/status/{id}", async (AppDbContext db, int id, DeviceStatus upda
     return Results.Ok(status);
 });
 
+/// <summary>
+/// Tar bort en enhet från databasen
+/// </summary>
 app.MapDelete("/api/status/{id}", async (AppDbContext db, int id) =>
 {
     var status = await db.Status.FindAsync(id);
@@ -105,6 +134,8 @@ app.MapDelete("/api/status/{id}", async (AppDbContext db, int id) =>
 });
 
 
-
+/// <summary>
+/// Aktiverar controllers
+/// </summary>
 app.MapControllers();
 app.Run();

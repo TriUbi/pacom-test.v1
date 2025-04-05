@@ -5,11 +5,18 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace DeviceStatusApi.Services;
 
+/// <summary>
+/// Skapar och validerar JWT tokens
+/// </summary>
 public class TokenService
 {
     private readonly SymmetricSecurityKey _key;
     private readonly int _expireMinutes;
 
+    /// <summary>
+    /// Hämtar hemlig nyckel och giltighetstid från inställningar
+    /// </summary>
+    /// <param name="config">Konfiguration med nyckel och tid</param>
     public TokenService(IConfiguration config)
     {
         var secret = config["Jwt:Key"] ?? throw new Exception("JWT Key not found.");
@@ -18,6 +25,11 @@ public class TokenService
         _key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret));
     }
 
+    /// <summary>
+    /// Skapar en JWT token för den angivna användaren
+    /// </summary>
+    /// <param name="username">Användarnamn</param>
+    /// <returns>JWT token som sträng</returns>
     public string GenerateToken(string username)
     {
         var claims = new[]
@@ -36,6 +48,10 @@ public class TokenService
         return new JwtSecurityTokenHandler().WriteToken(token);
     }
 
+    /// <summary>
+    /// Returnerar inställningar som behövs för att validera en token
+    /// </summary>
+    /// <returns>TokenValidationParameters</returns>
     public TokenValidationParameters GetValidationParameters()
     {
         return new TokenValidationParameters
