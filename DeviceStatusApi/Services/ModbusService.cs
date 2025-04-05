@@ -33,11 +33,20 @@ public class ModbusService : IDisposable
         return coils[0];
     }
 
+    /// <summary>
+    /// Skriver status till en coil (on/offf)
+    /// </summary>
+    /// <param name="slaveId">ID för Modbus enheten</param>
+    /// <param name="address">Adress till coil som ska ändras</param>
+    /// <param name="value">True för att sätta ON, false för OFF</param>
     public void WriteCoilStatus(byte slaveId, ushort address, bool value)
     {
         _master.WriteSingleCoil(slaveId, address, value);
     }
 
+    /// <summary>
+    /// Stänger Modbus anslutningen
+    /// </summary>
     public void Dispose()
     {
         _client?.Close();
