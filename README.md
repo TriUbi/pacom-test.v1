@@ -34,13 +34,13 @@ dotnet build
 dotnet run
 ```
 ## Starta Modbus Simulator (Docker)
-### Alternativ 1
+### Alternativ 1 - Manuell körning
 
 ```bash
 docker run -p 5020:5020 -it --rm oitc/modbus-server
 ```
 
-### Alternativ 2
+### Alternativ 2 - då docker-compose.yml finns 
 ```bash
 docker compose up -d
 ```
