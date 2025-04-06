@@ -33,14 +33,14 @@ cd DeviceStatusApi
 dotnet build
 dotnet run
 ```
-### Starta Modbus Simulator (Docker)
-## Alternativ 1
+## Starta Modbus Simulator (Docker)
+### Alternativ 1
 
 ```bash
 docker run -p 5020:5020 -it --rm oitc/modbus-server
 ```
 
-## Alternativ 2
+### Alternativ 2
 ```bash
 docker compose up -d
 ```
