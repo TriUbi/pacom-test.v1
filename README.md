@@ -2,7 +2,6 @@
 
 C# och Blazor
 👉🏻Detta projekt är ett fullstack web app för att visa och styra enheter i ett sjukhusmiljö via en Modbus-simulator.
-Det innehåller:
 
 - 🔧 Backend i **ASP.NET Core Web API** (`DeviceStatusApi`)
 - 💻 Frontend i **Blazor Server** (`DeviceFrontend`)
