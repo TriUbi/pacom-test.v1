@@ -42,6 +42,5 @@ Använd dessa uppgifter:
 - användarnamn = admin
 - lösernord = 1234
 
-```
 
-```
+
