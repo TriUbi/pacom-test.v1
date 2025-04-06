@@ -16,7 +16,15 @@ Innan du börjar, se till att ha:
 - [Docker Desktop](https://www.docker.com/products/docker-desktop)
 - [MAMP](https://www.mamp.info/) – för MySQL 
 
-### Starta frontend
+### för att starta backend 
+
+```bash
+cd DeviceStatusApi
+dotnet build
+dotnet run
+```
+
+### för att starta frontend
 
 ```bash
 cd DeviceFrontend
@@ -24,13 +32,6 @@ dotnet build
 dotnet run
 ```
 
-### Starta backend 
-
-```bash
-cd DeviceStatusApi
-dotnet build
-dotnet run
-```
 ## Starta Modbus Simulator (Docker)
 ### Alternativ 1 - Manuell körning
 
