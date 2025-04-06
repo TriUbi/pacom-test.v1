@@ -15,7 +15,7 @@ Innan du börjar, se till att ha:
 
 - [.NET 8 SDK](https://dotnet.microsoft.com/en-us/download)
 - [Docker Desktop](https://www.docker.com/products/docker-desktop)
-- [MAMP](https://www.mamp.info/) – för MySQL (port 8889)
+- [MAMP](https://www.mamp.info/) – för MySQL 
 - (Valfritt) Visual Studio Code
 
 
