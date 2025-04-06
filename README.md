@@ -9,7 +9,7 @@ Det innehåller:
 - 🐳 En **Modbus TCP-simulator** som körs i Docker
 - 🗄️ MySQL-databas (via MAMP)
 
-## Steg-för-steg: Kom igång / Step-by-step: Get started
+## Steg-för-steg: Kom igång
 
 Innan du börjar, se till att ha:
 
