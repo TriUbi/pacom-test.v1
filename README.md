@@ -18,8 +18,7 @@ Innan du börjar, se till att ha:
 - [MAMP](https://www.mamp.info/) – för MySQL (port 8889)
 - (Valfritt) Visual Studio Code
 
-
-### Starta frontend 
+ 
 ```bash
 cd DeviceFrontend
 dotnet build
