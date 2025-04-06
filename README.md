@@ -20,7 +20,7 @@ Innan du börjar, se till att ha:
 
 ### Starta frontend lokalt
 
-````bash
+```bash
 cd DeviceFrontend
 dotnet build
 dotnet run
