@@ -7,7 +7,7 @@ C# och Blazor
 - 💻 Frontend i **Blazor Server** (`DeviceFrontend`)
 - 🐳 En **Modbus TCP-simulator** som körs i Docker
 - 🗄️ MySQL-databas (via MAMP)
-
+❕Eftersom att ModRSsim2 och Modbus Poll är Windowsprogram och jag använder mig av en Mac så har jag valt att köra med docker som lösning till modbus simulatorn.
 ## Steg-för-steg: Kom igång
 
 Innan du börjar, se till att ha:
@@ -42,7 +42,6 @@ docker run -p 5020:5020 -it --rm oitc/modbus-server
 ```bash
 docker compose up -d
 ```
-
 ## 👤 Inloggning
 
 Använd dessa uppgifter:
