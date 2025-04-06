@@ -18,29 +18,30 @@ Innan du börjar, se till att ha:
 - [MAMP](https://www.mamp.info/) – för MySQL (port 8889)
 - (Valfritt) Visual Studio Code
 
- 
-```bash
+### Starta frontend lokalt
+
+````bash
 cd DeviceFrontend
 dotnet build
 dotnet run
 
 ### Starta backend lokalt
 
-```bash
 cd DeviceStatusApi
 dotnet build
 dotnet run
 
 ### Starta Modbus Simulator (Docker)
-```bash
-docker run -p 5020:5020 -it --rm oitc/modbus-server
 
+docker run -p 5020:5020 -it --rm oitc/modbus-server
 
 ## 👤 Inloggning
 
 Använd dessa uppgifter:
+
 - användarnamn = admin
 - lösernord = 1234
 
+```
 
-````
+```
