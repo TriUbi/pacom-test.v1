@@ -112,6 +112,16 @@ app.MapPut("/api/status/{id}", async (AppDbContext db, int id, DeviceStatus upda
     status.IsOn = updated.IsOn;
     await db.SaveChangesAsync();
 
+/// <summary>
+/// Kontrollera att CoilAddress är giltigt (måste vara >= 0)
+/// Returnerar ett problem om det inte är det, för att undvika att skicka ogiltiga
+/// adresser till Modbus-servern
+/// </summary>
+ if (status.CoilAddress < 0)
+    {
+        return Results.Problem("Ogiltig CoilAddress för enheten.");
+    }
+
     using var client = new TcpClient("127.0.0.1", 5020);
     var factory = new ModbusFactory();
     var master = factory.CreateMaster(client);
