@@ -18,22 +18,32 @@ Innan du börjar, se till att ha:
 - [MAMP](https://www.mamp.info/) – för MySQL 
 - (Valfritt) Visual Studio Code
 
+### Starta frontend
 
-
-````bash
+```bash
 cd DeviceFrontend
 dotnet build
 dotnet run
+```
 
-### Starta backend lokalt
+### Starta backend 
 
+```bash
 cd DeviceStatusApi
 dotnet build
 dotnet run
-
+```
 ### Starta Modbus Simulator (Docker)
+## Alternativ 1
 
+```bash
 docker run -p 5020:5020 -it --rm oitc/modbus-server
+```
+
+## Alternativ 2
+```bash
+docker compose up -d
+```
 
 ## 👤 Inloggning
 
