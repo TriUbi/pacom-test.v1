@@ -11,11 +11,12 @@
 }
 else if (string.IsNullOrEmpty(JwtStore.Token))
 {
-    <p class="text-danger">🔒 Du måste <a href="/login">logga in</a> för att se Modbus-status.</p>
+    <p class="text-danger">Du måste <a href="/login">logga in</a> för att se Modbus-status.</p>
 }
 else
 {
-    <h2>Modbus-status från simulator 🔌</h2>
+
+<h2><i class="bi bi-plug-fill me-2"></i>Modbus-status från simulator</h2>
 
     @if (isLoading)
     {
@@ -23,7 +24,7 @@ else
     }
     else if (hasError)
     {
-        <p class="text-danger">❌ Kunde inte läsa från Modbus-servern.</p>
+        <p class="text-danger">Kunde inte läsa från Modbus-servern.</p>
     }
     else
     {
@@ -41,24 +42,43 @@ else
                     <tr>
                         <td>@device.Name</td>
                         <td>@device.Id</td>
-                        <td style="color:@(device.IsOn ? "green" : "red")">
-                            @(device.IsOn ? "ON 🟢" : "OFF 🔴")
-                        </td>
+                        <td class="text-center">
+    <div class="d-flex flex-column align-items-center">
+        <i class="bi @(device.IsOn ? "bi-toggle-on text-success" : "bi-toggle-off text-danger") fs-3"></i>
+        <span class="fw-bold @(device.IsOn ? "text-success" : "text-danger")">
+            @(device.IsOn ? "ON" : "OFF")
+        </span>
+    </div>
+</td>
+
+
+
+
                     </tr>
                 }
             </tbody>
         </table>
 
-        <button class="btn btn-secondary mt-3" @onclick="LoadStatus">🔄 Läs om</button>
+       <button class="btn btn-secondary mt-3" @onclick="LoadStatus">
+    <i class="bi bi-arrow-clockwise me-1"></i> Läs om
+</button>
     }
 }
 
 @code {
+
+    /// <summary>
+    /// Lista med alla enheter och deras Modbus status
+    /// </summary>
     private List<ModbusDevice> devices = new();
     private bool isLoading = true;
     private bool hasError = false;
     private bool isReady = false;
 
+
+    /// <summary>
+    /// Klass som representerar en Modbus enhet
+    /// </summary>
     public class ModbusDevice
     {
         public int Id { get; set; }
@@ -66,6 +86,9 @@ else
         public bool IsOn { get; set; }
     }
 
+    /// <summary>
+    /// Körs första gången sidan visas. Hämtar token och laddar status
+    /// </summary>
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
@@ -82,6 +105,10 @@ else
         }
     }
 
+    /// <summary>
+    /// Hämtar status från Modbus API:et och sparar det i listan
+    /// Visar fel om något går snett
+    /// </summary>
     private async Task LoadStatus()
     {
         isLoading = true;

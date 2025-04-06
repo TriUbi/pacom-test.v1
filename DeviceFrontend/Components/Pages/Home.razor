@@ -11,16 +11,21 @@
 }
 else if (string.IsNullOrEmpty(JwtStore.Token))
 {
-    <p class="text-danger">🔒 Du måste <a href="/login">logga in</a> för att se enheterna.</p>
+    <p class="text-danger">
+    <i class="bi bi-lock-fill"></i> Du måste <a href="/login">logga in</a> för att se enheterna
+</p>
+
 }
 else
 {
-    <h2>Enheter i sjukhuset 🏥</h2>
+   <h2><i class="bi bi-hospital-fill me-2"></i>Enheter i sjukhuset</h2>
 
-    <div class="mb-3">
-        <input @bind="newDeviceName" placeholder="Namn på ny enhet" class="form-control" />
-        <button class="btn btn-success mt-2" @onclick="AddDevice">Lägg till enhet</button>
-    </div>
+<div class="mb-3">
+    <input @bind="newDeviceName" placeholder="Namn på ny enhet" class="form-control" />
+    <button class="btn btn-success mt-2" @onclick="AddDevice">
+        <i class="bi bi-plus-circle me-1"></i>Lägg till enhet
+    </button>
+</div>
 
     @if (devices == null)
     {
@@ -46,13 +51,17 @@ else
                 {
                     <tr>
                         <td>@device.Name</td>
-                        <td style="color:@(device.IsOn ? "green" : "red")">
-                            @(device.IsOn ? "ON 🟢" : "OFF 🔴")
-                        </td>
+                     <td style="color:@(device.IsOn ? "green" : "red")">
+                        @(device.IsOn
+                            ? @<i class="bi bi-toggle-on fs-1"></i>
+                            : @<i class="bi bi-toggle-off fs-"></i>)
+                    </td>
                         <td>
-                            <button class="btn btn-primary" @onclick="() => ToggleDevice(device)">
-                                @(device.IsOn ? "Stäng av" : "Starta")
-                            </button>
+
+                           <button class="btn btn-primary" @onclick="() => ToggleDevice(device)">
+                            <i class="bi @(device.IsOn ? "bi-power" : "bi-play-fill") me-1"></i>
+                            @(device.IsOn ? "Stäng av" : "Starta")
+                        </button>
                         </td>
                         <td>
                             <button class="btn btn-danger" @onclick="() => DeleteDevice(device.Id)">X</button>
@@ -61,7 +70,9 @@ else
                 }
             </tbody>
         </table>
-         <button class="btn btn-outline-danger mt-2 ms-2" @onclick="Logout">Logga ut</button>
+        <button class="btn btn-outline-danger mt-2 ms-2" @onclick="Logout">
+        <i class="bi bi-box-arrow-right me-1"></i>Logga ut
+    </button>
     }
 }
 
@@ -70,6 +81,9 @@ else
     private string newDeviceName = "";
     private bool isReady = false;
 
+    /// <summary>
+    /// Representerar en enhet i systemet
+    /// </summary>
     public class DeviceStatus
     {
         public int Id { get; set; }
@@ -77,6 +91,11 @@ else
         public bool IsOn { get; set; }
     }
 
+
+    /// <summary>
+    /// Körs när sidan är färdigrenderad första gången
+    /// Hämtar token från localStorage och laddar enheter
+    /// </summary>
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
@@ -93,11 +112,17 @@ else
         }
     }
 
+    /// <summary>
+    /// Hämtar alla enheter från API och sparar i listan
+    /// </summary>
     private async Task LoadDevices()
     {
         devices = await Http.GetFromJsonAsync<List<DeviceStatus>>("http://localhost:5277/api/status");
     }
 
+    /// <summary>
+    /// Växlar status (on/off) för en enhet och skickar ändringen till API
+    /// </summary>
     private async Task ToggleDevice(DeviceStatus device)
     {
         device.IsOn = !device.IsOn;
@@ -108,6 +133,10 @@ else
         }
     }
 
+
+    /// <summary>
+    /// Tar bort en enhet från databasen via API
+    /// </summary>
     private async Task DeleteDevice(int id)
     {
         var response = await Http.DeleteAsync($"http://localhost:5277/api/status/{id}");
@@ -117,6 +146,9 @@ else
         }
     }
 
+    /// <summary>
+    /// Lägger till en ny enhet med det namn som användaren har skrivit in
+    /// </summary>
     private async Task AddDevice()
     {
         if (string.IsNullOrWhiteSpace(newDeviceName)) return;
@@ -130,6 +162,9 @@ else
         }
     }
 
+    /// <summary>
+    /// Loggar ut användaren genom att ta bort token och gå till inloggningssidan
+    /// </summary>
     private async Task Logout()
     {
         JwtStore.Token = null;

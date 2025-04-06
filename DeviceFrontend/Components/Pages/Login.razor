@@ -5,7 +5,7 @@
 @using DeviceFrontend.Helpers
 @rendermode InteractiveServer
 
-<h3>🔐 Logga in</h3>
+<h3><i class="bi bi-lock-fill me-2"></i>Logga in</h3>
 
 @if (!string.IsNullOrEmpty(errorMessage))
 {
@@ -25,10 +25,12 @@
     private string password = "";
     private string? errorMessage;
 
+    /// <summary>
+    /// Utför inloggningen genom att skicka användarens inloggningsdata till backend
+    /// Om inloggningen lyckas, sparas JWT-token i JwtStore och i localStorage, och användaren navigeras till startsidan
+    /// </summary>
     private async Task PerformLogin()
     {
-
-    Console.WriteLine(" CLIIICKK");
        var client = Http; 
 
         var loginData = new { username, password };
@@ -54,8 +56,14 @@
         }
     }
 
+    /// <summary>
+    /// Klass för att representera svaret från inloggning (JWT-token)
+    /// </summary>
     private class TokenResult
     {
+        /// <summary>
+        /// JWT-token som returneras från backend.
+        /// </summary>
         public string Token { get; set; } = string.Empty;
     }
 }
