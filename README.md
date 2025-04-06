@@ -1,4 +1,4 @@
-# pacom-test.v1
+# pacom-test.v1 - Webb App för att hantera en Modbus-simulator
 
 C# och Blazor
 👉🏻Detta projekt är ett fullstack web app för att visa och styra enheter i ett sjukhusmiljö via en Modbus-simulator.
