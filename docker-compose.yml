@@ -1,0 +1,9 @@
+version: '3.8'
+
+services:
+  modbus-server:
+    image: oitc/modbus-server:latest
+    container_name: modbus-server
+    ports:
+      - "5020:5020"
+    restart: always
